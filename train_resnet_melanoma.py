@@ -4,6 +4,8 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 from torchvision import models
 from torch.utils.data import Dataset, DataLoader
+from torchvision.models import ResNet50_Weights
+
 import pandas as pd
 import numpy as np
 import os
@@ -82,8 +84,8 @@ test_transform = transforms.Compose([
 # Dataset and DataLoader
 train_dataset = MelanomaDataset(train_df, image_dir, transform=train_transform)
 test_dataset = MelanomaDataset(test_df, image_dir, transform=test_transform)
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, num_workers=4, pin_memory=True)
-test_loader = DataLoader(test_dataset, batch_size=64, num_workers=4, pin_memory=True)
+train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
+test_loader = DataLoader(test_dataset, batch_size=16, num_workers=4, pin_memory=True)
 
 torch.backends.cudnn.benchmark = True
 
@@ -91,7 +93,7 @@ torch.backends.cudnn.benchmark = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("cuda device:")
 print(torch.cuda.get_device_name(0))
-model = models.resnet50(pretrained=True)
+model = models.resnet50(weights=ResNet50_Weights.DEFAULT)
 model.fc = nn.Linear(model.fc.in_features, 2)
 model = model.to(device)
 
