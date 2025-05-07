@@ -42,6 +42,12 @@ class MelanomaDataset(Dataset):
         row = self.df.iloc[idx]
         image_path = os.path.join(self.image_dir, row['image_id'])
         image = cv2.imread(image_path)
+        
+        if image is None:
+            print(f"⚠ Skipping unreadable image: {image_path}")
+            idx = (idx + 1) % len(self.df)  # move to next index
+            continue
+
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB
         if self.transform:
             image = self.transform(image)
