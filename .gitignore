@@ -1,0 +1,10 @@
+images/
+preprocessed_512/
+*.jpg
+*.png
+*.out
+*.err
+__pycache__/
+*.pt
+*.pth
+*.log
