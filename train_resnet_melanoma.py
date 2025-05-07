@@ -39,20 +39,21 @@ class MelanomaDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
-        row = self.df.iloc[idx]
-        image_path = os.path.join(self.image_dir, row['image_id'])
-        image = cv2.imread(image_path)
-        
-        if image is None:
-            print(f"⚠ Skipping unreadable image: {image_path}")
-            idx = (idx + 1) % len(self.df)  # move to next index
-            continue
+        while True:
+            row = self.df.iloc[idx]
+            image_path = os.path.join(self.image_dir, row['image_id'])
+            image = cv2.imread(image_path)
 
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB
-        if self.transform:
-            image = self.transform(image)
-        label = int(row['type'])
-        return image, label
+            if image is None:
+                print(f"⚠ Skipping unreadable image: {image_path}")
+                idx = (idx + 1) % len(self.df)  # move to next index
+                continue
+
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB
+            if self.transform:
+                image = self.transform(image)
+            label = int(row['type'])
+            return image, label
 
 # Paths
 image_dir = "/work/ws-tmp/g062484-melo/images/preprocessed_512"
