@@ -15,7 +15,6 @@ from tqdm import tqdm
 import copy
 import datetime
 
-
 # Custom preprocessing filter
 def apply_preprocessing(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -36,7 +35,6 @@ class MelanomaDataset(Dataset):
         self.image_dir = image_dir
         self.transform = transform
 
-
     def __len__(self):
         return len(self.df)
 
@@ -44,11 +42,8 @@ class MelanomaDataset(Dataset):
         row = self.df.iloc[idx]
         image_path = os.path.join(self.image_dir, row['image_id'])
         image = cv2.imread(image_path)
-        # image = apply_preprocessing(image)
-        # image = cv2.resize(image, (224, 224))
-        # image = np.stack([image]*3, axis=-1)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB
-	if self.transform:
+        if self.transform:
             image = self.transform(image)
         label = int(row['type'])
         return image, label
@@ -87,12 +82,9 @@ test_loader = DataLoader(test_dataset, batch_size=64, num_workers=4, pin_memory=
 
 torch.backends.cudnn.benchmark = True
 
-# train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-# test_loader = DataLoader(test_dataset, batch_size=16)
-
 # Model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("cuda edevice:")
+print("cuda device:")
 print(torch.cuda.get_device_name(0))
 model = models.resnet50(pretrained=True)
 model.fc = nn.Linear(model.fc.in_features, 2)
@@ -121,7 +113,7 @@ for epoch in range(epochs):
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
-    
+
     avg_loss = running_loss / len(train_loader)
     print(f"Epoch {epoch+1}: Loss = {avg_loss:.4f}")
 
@@ -169,8 +161,6 @@ os.makedirs(plot_dir, exist_ok=True)
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 plot_path = os.path.join(plot_dir, f"confusion_matrix_{timestamp}.png")
 
-
-
 plt.imshow(cm, cmap='Blues')
 plt.title("Confusion Matrix")
 plt.colorbar()
@@ -181,7 +171,3 @@ plt.yticks([0, 1], ['benign', 'malignant'])
 plt.tight_layout()
 plt.savefig(plot_path)
 print(f"Saved confusion matrix to {plot_path}")
-
-
-
-
