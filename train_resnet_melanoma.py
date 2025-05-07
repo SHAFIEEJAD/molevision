@@ -39,21 +39,19 @@ class MelanomaDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
-        while True:
-            row = self.df.iloc[idx]
-            image_path = os.path.join(self.image_dir, row['image_id'])
-            image = cv2.imread(image_path)
+        row = self.df.iloc[idx]
+        image_path = os.path.join(self.image_dir, row['image_id'])
 
-            if image is None:
-                print(f"⚠ Skipping unreadable image: {image_path}")
-                idx = (idx + 1) % len(self.df)  # move to next index
-                continue
+        image = cv2.imread(image_path)
+        if image is None:
+            print(f"⚠ Skipping missing or corrupted image: {image_path}")
+            return self.__getitem__((idx + 1) % len(self.df))  # Try the next image safely
 
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB
-            if self.transform:
-                image = self.transform(image)
-            label = int(row['type'])
-            return image, label
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        if self.transform:
+            image = self.transform(image)
+        label = int(row['type'])
+        return image, label
 
 # Paths
 image_dir = "/work/ws-tmp/g062484-melo/images/preprocessed_512"
@@ -84,7 +82,7 @@ test_transform = transforms.Compose([
 # Dataset and DataLoader
 train_dataset = MelanomaDataset(train_df, image_dir, transform=train_transform)
 test_dataset = MelanomaDataset(test_df, image_dir, transform=test_transform)
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, num_workers=8, pin_memory=True)
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, num_workers=4, pin_memory=True)
 test_loader = DataLoader(test_dataset, batch_size=64, num_workers=4, pin_memory=True)
 
 torch.backends.cudnn.benchmark = True

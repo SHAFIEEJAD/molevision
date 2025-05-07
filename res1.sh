@@ -8,6 +8,7 @@
 #SBATCH --output=job_%j.out
 #SBATCH --error=job_%j.err
 
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 module load python
 
