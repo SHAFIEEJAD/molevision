@@ -5,7 +5,6 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=4
 #SBATCH --mem=128000
-#SBATCH --partition=short
 #SBATCH --output=job_%j.out
 #SBATCH --error=job_%j.err
 
