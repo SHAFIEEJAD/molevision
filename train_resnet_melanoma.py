@@ -130,11 +130,20 @@ best_loss = float('inf')
 patience = 3
 counter = 0
 
+
+# Load previous checkpoint if available: The next 4 lines + start_epoch in range.
+start_epoch = 17  # <-- Set to the last completed epoch number
+# Load previous checkpoint
+model.load_state_dict(torch.load("/work/ws-tmp/g062484-melo/images/latest_model_epoch17.pth"))
+print("✅ Loaded checkpoint from epoch", start_epoch)
+
+
+
 # Training loop with early stopping
 epochs = 20
 scaler = torch.cuda.amp.GradScaler()
 
-for epoch in range(epochs):
+for epoch in range(start_epoch, epochs):
     model.train()
     running_loss = 0.0
     
@@ -151,7 +160,7 @@ for epoch in range(epochs):
         scaler.scale(loss).backward()
         scaler.step(optimizer)
         scaler.update()
-        
+
         running_loss += loss.item()
 
     avg_loss = running_loss / len(train_loader)
