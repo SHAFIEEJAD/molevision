@@ -66,8 +66,11 @@ train_df, test_df = train_test_split(df, test_size=0.2, stratify=df['type'], ran
 # Data augmentation for training
 train_transform = transforms.Compose([
     transforms.ToPILImage(),
+    transforms.RandomResizedCrop(512, scale=(0.8, 1.0)),
     transforms.RandomHorizontalFlip(),
-    transforms.RandomRotation(15),
+    transforms.RandomVerticalFlip(),
+    transforms.RandomRotation(20),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
     transforms.Resize((512, 512)),
     transforms.ToTensor(),
     transforms.Normalize([0.5]*3, [0.5]*3)
@@ -98,7 +101,7 @@ model.fc = nn.Linear(model.fc.in_features, 2)
 model = model.to(device)
 
 # Training setup
-criterion = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss(weight=torch.tensor([0.7, 1.3]).to(device))
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
 # Early stopping settings
