@@ -4,7 +4,7 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 from torchvision import models
 from torch.utils.data import Dataset, DataLoader
-from torchvision.models import ResNet50_Weights
+from torchvision.models import mobilenet_v3_large, MobileNet_V3_Large_Weights
 
 import pandas as pd
 import numpy as np
@@ -70,8 +70,10 @@ train_transform = transforms.Compose([
     transforms.RandomHorizontalFlip(),
     transforms.RandomVerticalFlip(),
     transforms.RandomRotation(20),
+    transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
+    transforms.RandomPerspective(distortion_scale=0.2, p=0.5),
+    transforms.RandomErasing(p=0.5),
     transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
-    transforms.Resize((512, 512)),
     transforms.ToTensor(),
     transforms.Normalize([0.5]*3, [0.5]*3)
 ])
@@ -96,13 +98,31 @@ torch.backends.cudnn.benchmark = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("cuda device:")
 print(torch.cuda.get_device_name(0))
-model = models.resnet50(weights=ResNet50_Weights.DEFAULT)
-model.fc = nn.Linear(model.fc.in_features, 2)
+
+weights = MobileNet_V3_Large_Weights.DEFAULT
+model = mobilenet_v3_large(weights=weights)
+model.classifier[3] = nn.Linear(model.classifier[3].in_features, 2)
+
+# model = models.resnet50(weights=ResNet50_Weights.DEFAULT)
+# model.fc = nn.Linear(model.fc.in_features, 2)
+
+for name, param in model.named_parameters():
+    if "classifier" in name or "features.15" in name:  # last feature block
+        param.requires_grad = True
+
+
+
 model = model.to(device)
 
 # Training setup
-criterion = nn.CrossEntropyLoss(weight=torch.tensor([0.7, 1.3]).to(device))
+class_counts = train_df['type'].value_counts().to_dict()
+total = sum(class_counts.values())
+weights = [total / class_counts[i] for i in range(2)]
+criterion = nn.CrossEntropyLoss(weight=torch.tensor(weights, dtype=torch.float).to(device))
+
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+
 
 # Early stopping settings
 best_model_wts = copy.deepcopy(model.state_dict())
@@ -126,7 +146,10 @@ for epoch in range(epochs):
 
     avg_loss = running_loss / len(train_loader)
     print(f"Epoch {epoch+1}: Loss = {avg_loss:.4f}")
-
+    
+    # Step the scheduler
+    scheduler.step()
+    
     # Early stopping validation
     if avg_loss < best_loss:
         best_loss = avg_loss
