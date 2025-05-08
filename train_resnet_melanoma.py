@@ -45,12 +45,9 @@ class MelanomaDataset(Dataset):
         image_path = os.path.join(self.image_dir, row['image_id'])
 
         image = cv2.imread(image_path)
-        # Skip if unreadable or too small
+        # Warning if unreadable or too small
         if image is None or image.shape[0] < 64 or image.shape[1] < 64:
-            print(f"⚠ Skipping corrupted image: {image_path}")
-            with open("corrupted_images.log", "a") as log_file:
-                log_file.write(f"{image_path}\n")
-            return self.__getitem__((idx + 1) % len(self.df))  # safely retry next image
+            raise ValueError(f"Corrupted or unreadable image: {image_path}")
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         if self.transform:
