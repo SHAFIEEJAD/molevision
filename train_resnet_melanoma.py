@@ -89,8 +89,8 @@ test_transform = transforms.Compose([
 # Dataset and DataLoader
 train_dataset = MelanomaDataset(train_df, image_dir, transform=train_transform)
 test_dataset = MelanomaDataset(test_df, image_dir, transform=test_transform)
-train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4, pin_memory=True)
-test_loader = DataLoader(test_dataset, batch_size=16, num_workers=4, pin_memory=True)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4, pin_memory=True)
+test_loader = DataLoader(test_dataset, batch_size=32, num_workers=4, pin_memory=True)
 
 torch.backends.cudnn.benchmark = True
 
