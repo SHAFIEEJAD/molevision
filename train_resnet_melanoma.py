@@ -89,8 +89,8 @@ test_transform = transforms.Compose([
 # Dataset and DataLoader
 train_dataset = MelanomaDataset(train_df, image_dir, transform=train_transform)
 test_dataset = MelanomaDataset(test_df, image_dir, transform=test_transform)
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4, pin_memory=True)
-test_loader = DataLoader(test_dataset, batch_size=32, num_workers=4, pin_memory=True)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=8, pin_memory=True, prefetch_factor=2)
+test_loader = DataLoader(test_dataset, batch_size=32, num_workers=8, pin_memory=True)
 
 torch.backends.cudnn.benchmark = True
 
@@ -132,16 +132,26 @@ counter = 0
 
 # Training loop with early stopping
 epochs = 20
+scaler = torch.cuda.amp.GradScaler()
+
 for epoch in range(epochs):
     model.train()
     running_loss = 0.0
+    
+
     for images, labels in tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs}"):
         images, labels = images.to(device), labels.to(device)
+
         optimizer.zero_grad()
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
+        with torch.cuda.amp.autocast():
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+
+        # Backward pass & optimizer update (AMP compatible)
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+        
         running_loss += loss.item()
 
     avg_loss = running_loss / len(train_loader)
