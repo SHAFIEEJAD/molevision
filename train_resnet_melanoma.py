@@ -146,7 +146,8 @@ for epoch in range(epochs):
 
     avg_loss = running_loss / len(train_loader)
     print(f"Epoch {epoch+1}: Loss = {avg_loss:.4f}")
-    
+    torch.save(model.state_dict(), f"latest_model_epoch{epoch+1}.pth")
+
     # Step the scheduler
     scheduler.step()
     
