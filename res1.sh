@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --time=04:00:00
+#SBATCH --time=01:00:00
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --nodes=1
-#SBATCH --ntasks=4
+#SBATCH --ntasks=2
 #SBATCH --mem=64000
 #SBATCH --output=job_%j.out
 #SBATCH --error=job_%j.err
