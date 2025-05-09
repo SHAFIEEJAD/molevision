@@ -66,15 +66,10 @@ train_df, test_df = train_test_split(df, test_size=0.2, stratify=df['type'], ran
 # Data augmentation for training
 train_transform = transforms.Compose([
     transforms.ToPILImage(),
-    transforms.RandomResizedCrop(512, scale=(0.8, 1.0)),
     transforms.RandomHorizontalFlip(),
     transforms.RandomVerticalFlip(),
-    transforms.RandomRotation(20),
-    transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
-    transforms.RandomPerspective(distortion_scale=0.2, p=0.5),
-    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
+    transforms.RandomRotation(15),
     transforms.ToTensor(),
-    transforms.RandomErasing(p=0.5),
     transforms.Normalize([0.5]*3, [0.5]*3)
 ])
 
@@ -132,10 +127,10 @@ counter = 0
 
 
 # Load previous checkpoint if available: The next 4 lines + start_epoch in range.
-start_epoch = 17  # <-- Set to the last completed epoch number
-# Load previous checkpoint
-model.load_state_dict(torch.load("/work/ws-tmp/g062484-melo/images/latest_model_epoch17.pth"))
-print("✅ Loaded checkpoint from epoch", start_epoch)
+# start_epoch = 17  # <-- Set to the last completed epoch number
+# # Load previous checkpoint
+# model.load_state_dict(torch.load("/work/ws-tmp/g062484-melo/images/latest_model_epoch17.pth"))
+# print("✅ Loaded checkpoint from epoch", start_epoch)
 
 
 
@@ -143,7 +138,7 @@ print("✅ Loaded checkpoint from epoch", start_epoch)
 epochs = 20
 scaler = torch.cuda.amp.GradScaler()
 
-for epoch in range(start_epoch, epochs):
+for epoch in range(epochs):
     model.train()
     running_loss = 0.0
     
