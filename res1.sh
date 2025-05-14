@@ -11,12 +11,7 @@
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export PYTHONWARNINGS="ignore"
 
-
 module load python
-
 source ~/venvs/molevision/bin/activate
 
-input_file="/work/ws-tmp/g062484-melo/images/train_resnet_melanoma.py"
-
-python /work/ws-tmp/g062484-melo/images/train_resnet_melanoma.py "$input_file"
-
+python /work/ws-tmp/g062484-melo/images/train_resnet_melanoma.py
