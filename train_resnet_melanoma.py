@@ -98,11 +98,17 @@ def objective(trial):
             preds += model(X.to(device)).argmax(1).cpu().tolist()
             true += y.tolist()
 
-    return f1_score(true,preds)
+    f1 = f1_score(true, preds)
+    print(f"Trial {trial.number}: F1={f1:.4f}, Params={trial.params}")
+    return f1
 
 study=optuna.create_study(direction='maximize')
 study.optimize(objective,n_trials=10)
 print("Best trial:",study.best_trial.params)
+
+# Save Optuna results explicitly
+study.trials_dataframe().to_csv('optuna_results.csv', index=False)
+print("✅ Optuna results saved to optuna_results.csv")
 
 # Use best params
 params = study.best_trial.params
