@@ -6,5 +6,4 @@ preprocessed_512/
 *.err
 __pycache__/
 *.pt
-*.pth
 *.log
